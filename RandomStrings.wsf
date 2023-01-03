@@ -1,0 +1,15 @@
+<job>
+   <script language="JScript" src="RandomStrings.js" />
+   <script language="JScript">
+// call construct and overwrite options
+var rs=new RandomStrings({
+	file:"./" + WScript.ScriptName.replace(/\.\w+$/, ".txt"),
+	ptn:"^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[\-\_])(?=.*[\+])[0-9a-zA-Z][0-9a-zA-Z\-\_\+]+[0-9a-zA-Z]$",
+	str:"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_+",
+	num:1,
+	len:16
+});
+// execute
+rs.exec();
+   </script>
+</job>

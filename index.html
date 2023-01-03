@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript" src="./RandomStrings.js"></script>
+</head>
+<body>
+	<script>
+// call construct and overwrite options
+var rs=new RandomStrings({
+	ptn:"^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[\-\_])(?=.*[\+])[0-9a-zA-Z][0-9a-zA-Z\-\_\+]+[0-9a-zA-Z]$",
+	str:"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_+",
+	num:1,
+	len:24,
+	show:false
+});
+// execute
+rs.exec();
+	</script>
+</body>
+</html>

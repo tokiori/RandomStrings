@@ -20,38 +20,44 @@ RandomStrings.prototype = {
 		created:[]
 	},
 	init:function(options){
-		if(typeof(WEscript) !== "undefined"){
+		this.info.created = [];
+		if(typeof(WScript) !== "undefined"){
 			file="./" + WScript.ScriptName.replace(/\.\w+$/, ".txt");
 		}
 		for(key in options){
 			this.options[key] = options[key];
 		}
 	},
-	isWindows:function(msg){
+	isWindows:function(){
 		return typeof(ActiveXObject) !== "undefined"
 	},
-	isWeb:function(msg){
+	isWeb:function(){
 		return typeof(document) !== "undefined"
 	},
-	write:function(msg){
-		this._writeWindows(msg);
-		this._writeWeb(msg);
-	},
-	_writeWindows:function(msg){
-		if(typeof(ActiveXObject) === "undefined"){
-			return false;
+	lnCode:function(){
+		if(this.isWindows()){
+			return "\r\n";
+		} else if(this.isWeb()){
+			return "<br />\r\n";
 		}
-		var fs = new ActiveXObject("Scripting.FileSystemObject");
-		var file = fs.OpenTextFile(this.options.file, 2, true );
-		file.WriteLine(msg.join("\r\n"));
-		file.Close();
-		fs = null;
 	},
-	_writeWeb:function(msg){
-		if(typeof(document) === "undefined"){
-			return false;
+	write:function(msg, elemkey){
+		if(this.isWindows()){
+			var fs = new ActiveXObject("Scripting.FileSystemObject");
+			var file = fs.OpenTextFile(this.options.file, 2, true );
+			file.WriteLine(msg.join(this.lnCode()));
+			file.Close();
+			fs = null;
+		} else if(this.isWeb()){
+			document.querySelector(elemkey).innerHTML = msg.join(this.lnCode());
 		}
-		document.write(msg.join("<br />\r\n"));
+	},
+	echo:function(arg){
+		if(this.isWindows()){
+			WScript.echo(arg);
+		} else if(this.isWeb()){
+			alert(arg);
+		}
 	},
 	build:function(){
 		var arr=[];
@@ -71,24 +77,6 @@ RandomStrings.prototype = {
 			return "";
 		}
 		return (randstr.match(regex)) ? randstr : this.create();
-	},
-	echo:function(arg){
-		this._echoWindows(arg);
-		this._echoWeb(arg);
-	},
-	_echoWindows:function(arg){
-		if(typeof(WScript) === "undefined"){
-			return false;
-		}
-		WScript.echo(arg);
-		return true;
-	},
-	_echoWeb:function(arg){
-		if(typeof(alert) === "undefined"){
-			return false;
-		}
-		alert(arg);
-		return true;
 	},
 	get:function(){
 		var created = [];
@@ -119,13 +107,13 @@ RandomStrings.prototype = {
 		msg.push("match  : " + Math.floor(this.info.created.length / this.info.count * 100) + "%");
 		msg.push("");
 		msg.push("[create] : ");
-		msg.push(this.info.created.join("\r\n"));
+		msg.push(this.info.created.join(this.lnCode()));
 		return msg;
 	},
-	exec:function(){
+	exec:function(elemkey){
 		this.get();
 		var msg = this.log();
-		this.write(msg);
+		this.write(msg, elemkey);
 		if(!!this.options.show){
 			msg.push("");
 			msg.push("[saveto] : ");

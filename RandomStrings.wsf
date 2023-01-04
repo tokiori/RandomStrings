@@ -6,7 +6,7 @@ var rs=new RandomStrings({
 	file:"./" + WScript.ScriptName.replace(/\.\w+$/, ".txt"),
 	ptn:"^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[\-\_])(?=.*[\+])[0-9a-zA-Z][0-9a-zA-Z\-\_\+]+[0-9a-zA-Z]$",
 	str:"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_+",
-	num:1,
+	num:5,
 	len:16
 });
 // execute

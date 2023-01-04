@@ -2,19 +2,105 @@
 <html>
 <head>
 	<script type="text/javascript" src="./RandomStrings.js"></script>
-</head>
-<body>
+	<style>
+		body, div, p {
+			margin:0;
+			padding:0;
+			border:0;
+		}
+		h1,h2,h3,h4,h5,h6 {
+			margin-top:0.8em;
+			margin-bottom:0.1em;
+		}
+		.container {
+			padding: 0.3em;
+		}
+		#gen_rand_str table {
+			border-collapse: collapse;
+		}
+		#gen_rand_str table td {
+			border: 1px solid #eeeeee;
+			padding: 0.3em;
+		}
+	</style>
 	<script>
-// call construct and overwrite options
-var rs=new RandomStrings({
-	ptn:"^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[\-\_])(?=.*[\+])[0-9a-zA-Z][0-9a-zA-Z\-\_\+]+[0-9a-zA-Z]$",
-	str:"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_+",
-	num:1,
-	len:24,
-	show:false
-});
-// execute
-rs.exec();
+		var run = function(){
+			var symbols = [];
+			if(document.querySelector("#symbol_plus").checked){
+				symbols.push("\+");
+			}
+			if(document.querySelector("#symbol_hyphen").checked){
+				symbols.push("\-");
+			}
+			if(document.querySelector("#symbol_underscore").checked){
+				symbols.push("\_");
+			}
+			var requiredptn = (symbols.length) ? "(?=.*[" + symbols.join("") + "])" : "";
+			var optptn = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])" + requiredptn + "[0-9a-zA-Z][0-9a-zA-Z" + symbols.join("") + "]+[0-9a-zA-Z]$";
+			var optstr = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890" + symbols.join("");
+			var optnum = document.querySelector("#gen_num").value || 1;
+			var optlen = document.querySelector("#gen_len").value || 24;
+			var optmax = document.querySelector("#gen_max").value || 999;
+
+			// call construct and overwrite options
+			var rs=new RandomStrings({
+				// ptn:"^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[\-\_])(?=.*[\+])[0-9a-zA-Z][0-9a-zA-Z\-\_\+]+[0-9a-zA-Z]$",
+				// str:"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_",
+				ptn:optptn,
+				str:optstr,
+				num:optnum,
+				len:optlen,
+				show:false
+			});
+			// execute
+			var res = rs.exec("#log");
+			document.querySelector("#result").innerHTML = res.join("<br>");
+		}
 	</script>
+</head>
+<body onload="run()">
+	<div class="container">
+		<h1>ランダム文字列生成</h1>
+		<p>※ページ描画時に再生成するため生成文字のコピペ保管忘れずに</p>
+		<form id="gen_rand_str">
+			<h2>生成条件</h2>
+			<table>
+				<tr>
+					<td>長さ</td>
+					<td><input type="number" id="gen_len" value="24"></td>
+				</tr>
+				<tr>
+					<td>生成個数</td>
+					<td><input type="number" id="gen_num" value="1"></td>
+				</tr>
+				<tr>
+					<td>使用文字</td>
+					<td>
+						<p>記号（いずれかを含める）</p>
+						<input type="checkbox" id="symbol_plus" name="symbol_plus">
+						<label for="symbol_plus">+</label>
+						<input type="checkbox" id="symbol_hyphen" name="symbol_hyphen" checked>
+						<label for="symbol_hyphen">-</label>
+						<input type="checkbox" id="symbol_underscore" name="symbol_underscore" checked>
+						<label for="symbol_underscore">_</label>
+					</td>
+				</tr>
+				<tr>
+					<td>試行回数</td>
+					<td><input type="number" id="gen_max" value="999"></td>
+				</tr>
+			</table>
+			<br>
+			<input type="button" value="生成実行" onclick="run()">
+		</form>
+		<div>
+			<h2>生成結果</h2>
+			<p id="result"></p>
+		</div>
+		<div>
+			<h2>実行ログ</h2>
+			<p id="log"></p>
+		</div>
+	</div>
 </body>
 </html>

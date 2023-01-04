@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<script type="text/javascript" src="./RandomStrings.js"></script>
 	<style>
 		body, div, p {
@@ -14,6 +15,8 @@
 		}
 		.container {
 			padding: 0.3em;
+			word-break: break-all;
+			line-height: 1.5em;
 		}
 		#gen_rand_str table {
 			border-collapse: collapse;
@@ -22,22 +25,62 @@
 			border: 1px solid #eeeeee;
 			padding: 0.3em;
 		}
+		#gen_rand_str input[type="number"]{
+			font-size:1.1em;
+		}
+		.symbols {
+			display: inline-block;
+			border: 1px solid #cccccc;
+			background-color: #eeeeee;
+			border-radius: 0.3em;
+		}
+		.symbols input[type="checkbox"]{
+			padding: 0;
+			margin: 0 0 0 0.4em;
+		}
+		.symbols label{
+			padding: 0;
+			margin: 0 0.4em 0 0;
+		}
+		.symbols.checked{
+			background-color:#88eeaa;
+			font-weight: bold;
+		}
+		.gen_result.copied{
+			background-color:#88eeaa;
+		}
 	</style>
 	<script>
+		var onloaded = function(){
+			var symbols = document.querySelectorAll(".symbols input[type='checkbox']");
+			symbols.forEach(function(elem, key){
+				elem.onclick = function(){
+					checkedColorChange(elem);
+				};
+				checkedColorChange(elem);
+			})
+			console.dir(symbols);
+			run();
+		};
+		var checkedColorChange = function(elem){
+			console.log(elem.id+"("+elem.value+"):"+elem.checked)
+			if(elem.checked){
+				elem.parentNode.classList.add('checked');
+			} else {
+				elem.parentNode.classList.remove('checked');
+			}
+		};
 		var run = function(){
-			var symbols = [];
-			if(document.querySelector("#symbol_plus").checked){
-				symbols.push("\+");
-			}
-			if(document.querySelector("#symbol_hyphen").checked){
-				symbols.push("\-");
-			}
-			if(document.querySelector("#symbol_underscore").checked){
-				symbols.push("\_");
-			}
-			var requiredptn = (symbols.length) ? "(?=.*[" + symbols.join("") + "])" : "";
-			var optptn = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])" + requiredptn + "[0-9a-zA-Z][0-9a-zA-Z" + symbols.join("") + "]+[0-9a-zA-Z]$";
-			var optstr = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890" + symbols.join("");
+			var selectedsymbols = [];
+			var symbols = document.querySelectorAll(".symbols input[type='checkbox']");
+			symbols.forEach(function(elem, key){
+				if(elem.checked){
+					selectedsymbols.push(elem.value);
+				}
+			})
+			var requiredptn = (selectedsymbols.length) ? "(?=.*[" + selectedsymbols.join("") + "])" : "";
+			var optptn = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])" + requiredptn + "[0-9a-zA-Z][0-9a-zA-Z" + selectedsymbols.join("") + "]+[0-9a-zA-Z]$";
+			var optstr = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890" + selectedsymbols.join("");
 			var optnum = document.querySelector("#gen_num").value || 1;
 			var optlen = document.querySelector("#gen_len").value || 24;
 			var optmax = document.querySelector("#gen_max").value || 999;
@@ -53,12 +96,82 @@
 				show:false
 			});
 			// execute
-			var res = rs.exec("#log");
-			document.querySelector("#result").innerHTML = res.join("<br>");
+			var res = rs.exec("#runlog");
+			var $result = document.querySelector("#result");
+			$result.innerHTML = "";
+			res.forEach(function(val, i){
+				var $rs = document.createElement("input");
+				$rs.type = "text";
+				$rs.value = val;
+				$rs.classList.add("gen_result");
+				$rs.setAttribute("readonly", "readonly");
+				$result.appendChild($rs);
+				var $btn = document.createElement("input");
+				$btn.type = "button";
+				$btn.value = "copy";
+				$btn.onclick = function(){
+					var results = document.querySelectorAll(".gen_result");
+					results.forEach(function(elem, key){
+						elem.classList.remove("copied");
+					})
+					toclipboard(val);
+					$rs.classList.add("copied");
+				};
+				$result.appendChild($btn);
+				$result.appendChild(document.createElement("br"));
+			});
+
+			// document.querySelector("#result").innerHTML = res.join("<br>");
+		}
+		var toclipboard = function(text){
+			let choise;
+			let res;
+
+			if(navigator.userAgent.match(/ipad|iphone/i)){
+				choise = "navigator.userAgent.match(/ipad|iphone/i)";
+				let range = document.createRange();
+				range.selectNodeContents(ta);
+				let sel = window.getSelection();
+				sel.removeAllRanges();
+				sel.addRange(range);
+				res = document.execCommand("copy");
+			}
+			else if(window.clipboardData){
+				choise = "window.clipboardData";
+				res = window.clipboardData.setData("Text" , text);
+			}
+			else if(navigator.clipboard){
+				choise = "navigator.clipboard";
+				res = navigator.clipboard.writeText(text);
+			}
+			else {
+				choise = "ta.select()";
+				let ta = document.createElement("textarea");
+				ta.value = text;
+				ta.setAttribute("readonly", "readonly");
+				ta.setAttribute("contenteditable", true);
+				ta.style.top = "0";
+				ta.style.left = "0";
+				ta.style.position = "fixed";
+				try {
+					document.body.appendChild(ta);
+					ta.focus();
+					ta.select();
+					res = document.execCommand("copy");
+				} finally {
+					document.body.removeChild(ta);
+	//				ta.parentElement.removeChild(ta);
+				}
+			}
+			if(!!!res){
+				window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
+			}
+	//		console.log("toclipboard:%s, text:%s, case:%s", res, text, choise);
+			return res;
 		}
 	</script>
 </head>
-<body onload="run()">
+<body onload="onloaded()">
 	<div class="container">
 		<h1>ランダム文字列生成</h1>
 		<p>※ページ描画時に再生成するため生成文字のコピペ保管忘れずに</p>
@@ -77,12 +190,26 @@
 					<td>使用文字</td>
 					<td>
 						<p>記号（いずれかを含める）</p>
-						<input type="checkbox" id="symbol_plus" name="symbol_plus">
-						<label for="symbol_plus">+</label>
-						<input type="checkbox" id="symbol_hyphen" name="symbol_hyphen" checked>
-						<label for="symbol_hyphen">-</label>
-						<input type="checkbox" id="symbol_underscore" name="symbol_underscore" checked>
-						<label for="symbol_underscore">_</label>
+						<div class="symbols">
+							<input type="checkbox" value="\+" id="symbol_plus" name="symbol_plus">
+							<label for="symbol_plus">+</label>
+						</div>
+						<div class="symbols">
+							<input type="checkbox" value="\-" id="symbol_hyphen" name="symbol_hyphen" checked>
+							<label for="symbol_hyphen">-</label>
+						</div>
+						<div class="symbols">
+							<input type="checkbox" value="\_" id="symbol_underscore" name="symbol_underscore" checked>
+							<label for="symbol_underscore">_</label>
+						</div>
+						<div class="symbols">
+							<input type="checkbox" value="\?" id="symbol_question" name="symbol_question">
+							<label for="symbol_question">?</label>
+						</div>
+						<div class="symbols">
+							<input type="checkbox" value="\!" id="symbol_exclamation" name="symbol_exclamation">
+							<label for="symbol_exclamation">!</label>
+						</div>
 					</td>
 				</tr>
 				<tr>
@@ -99,7 +226,7 @@
 		</div>
 		<div>
 			<h2>実行ログ</h2>
-			<p id="log"></p>
+			<p id="runlog"></p>
 		</div>
 	</div>
 </body>

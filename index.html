@@ -46,6 +46,13 @@
 			background-color:#88eeaa;
 			font-weight: bold;
 		}
+		.gen_result{
+			border: 1px solid #cccccc;
+			background-color: #eeeeee;
+			padding: 0.2em;
+			margin: 0.3em 0;
+			cursor: pointer;
+		}
 		.gen_result.copied{
 			background-color:#88eeaa;
 		}
@@ -100,16 +107,12 @@
 			var $result = document.querySelector("#result");
 			$result.innerHTML = "";
 			res.forEach(function(val, i){
-				var $rs = document.createElement("input");
-				$rs.type = "text";
-				$rs.value = val;
+				var $rs = document.createElement("p");
+				$rs.innerHTML = val;
 				$rs.classList.add("gen_result");
 				$rs.setAttribute("readonly", "readonly");
 				$result.appendChild($rs);
-				var $btn = document.createElement("input");
-				$btn.type = "button";
-				$btn.value = "copy";
-				$btn.onclick = function(){
+				$rs.onclick = function(){
 					var results = document.querySelectorAll(".gen_result");
 					results.forEach(function(elem, key){
 						elem.classList.remove("copied");
@@ -117,11 +120,7 @@
 					toclipboard(val);
 					$rs.classList.add("copied");
 				};
-				$result.appendChild($btn);
-				$result.appendChild(document.createElement("br"));
 			});
-
-			// document.querySelector("#result").innerHTML = res.join("<br>");
 		}
 		var toclipboard = function(text){
 			let choise;
@@ -175,6 +174,7 @@
 	<div class="container">
 		<h1>ランダム文字列生成</h1>
 		<p>※ページ描画時に再生成するため生成文字のコピペ保管忘れずに</p>
+		<a href="https://github.com/tokiori/RandomStrings">(github repository)</a>
 		<form id="gen_rand_str">
 			<h2>生成条件</h2>
 			<table>
@@ -218,10 +218,11 @@
 				</tr>
 			</table>
 			<br>
-			<input type="button" value="生成実行" onclick="run()">
+			<input type="button" value="生成実行" onclick="run()" style="font-weight: bold;">
 		</form>
 		<div>
 			<h2>生成結果</h2>
+			<p>タップでクリップボードへコピー</p>
 			<p id="result"></p>
 		</div>
 		<div>

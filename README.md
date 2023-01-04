@@ -5,11 +5,11 @@
 # 実行方法
 下記どちらかお好きな方へ
 
-・Windows上で実行
+- Windows上で実行
 　「RandomStrings.wsf」を実行すると結果ファイル「RandomStrings.txt」が作成される。
 
-・htmlで表示
-　「RandomStrings.html」をブラウザで表示
+- htmlで表示
+　「index.html」または、[github page](https://tokiori.github.io/RandomStrings/)をブラウザで表示
 
 # オプション
 上記ファイルどちらでもランダム文字列オプションを指定することが可能

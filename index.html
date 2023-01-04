@@ -70,24 +70,40 @@
 			run();
 		};
 		var checkedColorChange = function(elem){
-			console.log(elem.id+"("+elem.value+"):"+elem.checked)
+			var checkedsymbols = document.querySelectorAll(".symbols input[type='checkbox']:checked");
+			document.querySelector("#strtype_symbol").checked = checkedsymbols.length ? true : false;
 			if(elem.checked){
 				elem.parentNode.classList.add('checked');
 			} else {
 				elem.parentNode.classList.remove('checked');
 			}
 		};
+		var str_alias = {
+			"a-z" : "abcdefghijklmnopqrstuvwxyz",
+			"A-Z" : "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+			"0-9" : "1234567890"
+		}
 		var run = function(){
-			var selectedsymbols = [];
-			var symbols = document.querySelectorAll(".symbols input[type='checkbox']");
-			symbols.forEach(function(elem, key){
-				if(elem.checked){
-					selectedsymbols.push(elem.value);
-				}
+			var requiredptn = [];
+			var selectedstrtypes = [];
+			var selectedptntypes = [];
+			var strtypes = document.querySelectorAll(".strtypes input[type='checkbox']:checked");
+			strtypes.forEach(function(elem, key){
+				selectedstrtypes.push(str_alias[elem.value]);
+				selectedptntypes.push(elem.value);
+				requiredptn.push("(?=.*[" + elem.value + "])");
 			})
-			var requiredptn = (selectedsymbols.length) ? "(?=.*[" + selectedsymbols.join("") + "])" : "";
-			var optptn = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])" + requiredptn + "[0-9a-zA-Z][0-9a-zA-Z" + selectedsymbols.join("") + "]+[0-9a-zA-Z]$";
-			var optstr = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890" + selectedsymbols.join("");
+			var selectedsymbols = [];
+			var symbols = document.querySelectorAll(".symbols input[type='checkbox']:checked");
+			symbols.forEach(function(elem, key){
+				selectedsymbols.push(elem.value);
+			})
+			if(selectedsymbols.length) requiredptn.push("(?=.*[" + selectedsymbols.join("") + "])");
+			// var requiredptn = (selectedsymbols.length) ? "(?=.*[" + selectedsymbols.join("") + "])" : "";
+			// var optptn = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])" + requiredptn + "[0-9a-zA-Z][0-9a-zA-Z" + selectedsymbols.join("") + "]+[0-9a-zA-Z]$";
+			// var optstr = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890" + selectedsymbols.join("");
+			var optptn = "^" + requiredptn.join("") + "[" + selectedptntypes.join("") + "][" + selectedptntypes.join("") + selectedsymbols.join("") + "]+[" + selectedptntypes.join("") + "]$";
+			var optstr = selectedstrtypes.join("") + selectedsymbols.join("");
 			var optnum = document.querySelector("#gen_num").value || 1;
 			var optlen = document.querySelector("#gen_len").value || 24;
 			var optmax = document.querySelector("#gen_max").value || 999;
@@ -189,7 +205,22 @@
 				<tr>
 					<td>使用文字</td>
 					<td>
-						<p>記号（いずれかを含める）</p>
+						<div class="strtypes">
+							<input type="checkbox" value="A-Z" id="strtype_upper" name="strtype_upper" checked>
+							<label for="strtype_upper">半角英大文字</label>
+						</div>
+						<div class="strtypes">
+							<input type="checkbox" value="a-z" id="strtype_lower" name="strtype_lower" checked>
+							<label for="strtype_lower">半角英小文字</label>
+						</div>
+						<div class="strtypes">
+							<input type="checkbox" value="0-9" id="strtype_number" name="strtype_number" checked disabled>
+							<label for="strtype_number">半角数字</label>
+						</div>
+						<div class="">
+							<input type="checkbox" value="" id="strtype_symbol" name="strtype_symbol" disabled>
+							<label for="strtype_symbol">記号（下記いずれかを含む）</label>
+						</div>
 						<div class="symbols">
 							<input type="checkbox" value="\+" id="symbol_plus" name="symbol_plus">
 							<label for="symbol_plus">+</label>

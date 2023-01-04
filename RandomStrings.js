@@ -20,6 +20,7 @@ RandomStrings.prototype = {
 		created:[]
 	},
 	init:function(options){
+		this.info.count = 0;
 		this.info.created = [];
 		if(typeof(WScript) !== "undefined"){
 			file="./" + WScript.ScriptName.replace(/\.\w+$/, ".txt");

@@ -36,9 +36,10 @@
 			width: 4.5em;
 		}
 		#gen_rand_str table td {
-			border: 1px solid #eeeeee;
+			border: 1px solid #dddddd;
 			padding: 0.2em;
 		}
+		#gen_rand_str input[type="text"],
 		#gen_rand_str input[type="number"]{
 			font-size:1.1em;
 		}
@@ -127,12 +128,18 @@
 			return true;
 		};
 		var toggleTypeTextDisabled = function(elem){
-			document.querySelector("#"+elem.id+"_values").disabled = !elem.checked
+			document.querySelector("#"+elem.id+"_values").disabled = !elem.checked;
+			var checkedstrtypes = document.querySelectorAll(".strtypes input[type='checkbox']:checked");
+			if(checkedstrtypes.length){
+				document.querySelector("#presuffix").disabled = false;
+			} else {
+				document.querySelector("#presuffix").disabled = true;
+				document.querySelector("#presuffix").checked = false;
+			}
 		};
 		var toggleSymbolsColor = function(elem){
 			var checkedsymbols = document.querySelectorAll(".symbols input[type='checkbox']:checked");
 			document.querySelector("#strtype_symbol").checked = checkedsymbols.length ? true : false;
-			document.querySelector("#presuffix").disabled = checkedsymbols.length ? false : true;
 			if(elem.checked){
 				elem.parentNode.classList.add('checked');
 			} else {
@@ -154,19 +161,20 @@
 				requiredptn.push("(?=.*[" + elem.value + "])");
 			})
 
-			var selectedsymbols = [];
+			var selectedstrsymbols = [];
+			var selectedptnsymbols = [];
 			var symbols = document.querySelectorAll(".symbols input[type='checkbox']:checked");
 			symbols.forEach(function(elem, key){
-				selectedsymbols.push(elem.value);
+				selectedstrsymbols.push(elem.value.replace(/(\\)([^\\])/, function(matched, str1, str2){ return str2; }));
+				selectedptnsymbols.push(elem.value);
 			})
-			if(selectedsymbols.length) requiredptn.push("(?=.*[" + selectedsymbols.join("") + "])");
+			if(selectedptnsymbols.length) requiredptn.push("(?=.*[" + selectedptnsymbols.join("") + "])");
 
 			var $presuffix = document.querySelector("#presuffix");
 			var presuffixptn = !$presuffix.disabled && $presuffix.checked ? "[" + selectedptntypes.join("") + "]" : "";
 
-			var optptn = "^" + requiredptn.join("") + presuffixptn + "[" + selectedptntypes.join("") + selectedsymbols.join("") + "]+" + presuffixptn + "$";
-			// var optptn = "^" + requiredptn.join("") + "[" + selectedptntypes.join("") + "][" + selectedptntypes.join("") + selectedsymbols.join("") + "]+[" + selectedptntypes.join("") + "]$";
-			var optstr = selectedstrtypes.join("") + selectedsymbols.join("");
+			var optptn = "^" + requiredptn.join("") + presuffixptn + "[" + selectedptntypes.join("") + selectedptnsymbols.join("") + "]+" + presuffixptn + "$";
+			var optstr = selectedstrtypes.join("") + selectedstrsymbols.join("");
 			var optnum = document.querySelector("#gen_num").value || 1;
 			var optlen = document.querySelector("#gen_len").value || 24;
 			var optmax = document.querySelector("#gen_max").value || 999;
@@ -269,7 +277,7 @@
 			<h2>生成条件</h2>
 			<table>
 				<tr>
-					<td>長さ</td>
+					<td>生成長さ</td>
 					<td><input class="genoptions" type="number" id="gen_len" value="24"></td>
 				</tr>
 				<tr>
@@ -277,26 +285,31 @@
 					<td><input class="genoptions" type="number" id="gen_num" value="1"></td>
 				</tr>
 				<tr>
-					<td>使用文字</td>
+					<td>半角英数</td>
 					<td>
 						<div class="strtypes">
 							<input type="checkbox" value="A-Z" id="strtype_upper" name="strtype_upper" checked>
-							<label for="strtype_upper">半角英大文字</label>
+							<label for="strtype_upper">英大</label>
 							<input type="text" id="strtype_upper_values" value="ABCDEFGHIJKLMNOPQRSTUVWXYZ">
 						</div>
 						<div class="strtypes">
 							<input type="checkbox" value="a-z" id="strtype_lower" name="strtype_lower" checked>
-							<label for="strtype_lower">半角英小文字</label>
+							<label for="strtype_lower">英小</label>
 							<input type="text" id="strtype_lower_values" value="abcdefghijklmnopqrstuvwxyz">
 						</div>
 						<div class="strtypes">
-							<input type="checkbox" value="0-9" id="strtype_number" name="strtype_number" checked disabled>
-							<label for="strtype_number">半角数字　　</label>
+							<input type="checkbox" value="0-9" id="strtype_number" name="strtype_number" checked>
+							<label for="strtype_number">数字</label>
 							<input type="text" id="strtype_number_values" value="1234567890">
 						</div>
+					</td>
+				</tr>
+				<tr>
+					<td>記号</td>
+					<td>
 						<div class="">
 							<input type="checkbox" value="" id="strtype_symbol" name="strtype_symbol" disabled>
-							<label for="strtype_symbol">記号（下記いずれかを含む）</label>
+							<label for="strtype_symbol">下記いずれかを含む</label>
 						</div>
 						<div>
 							<label class="symbols" for="symbol_underscore">

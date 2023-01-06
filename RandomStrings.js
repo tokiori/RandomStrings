@@ -35,7 +35,7 @@ RandomStrings.prototype = {
 	isWeb:function(){
 		return typeof(document) !== "undefined"
 	},
-	lnCode:function(){
+	newline:function(){
 		if(this.isWindows()){
 			return "\r\n";
 		} else if(this.isWeb()){
@@ -46,11 +46,11 @@ RandomStrings.prototype = {
 		if(this.isWindows()){
 			var fs = new ActiveXObject("Scripting.FileSystemObject");
 			var file = fs.OpenTextFile(this.options.file, 2, true );
-			file.WriteLine(msg.join(this.lnCode()));
+			file.WriteLine(msg.join(this.newline()));
 			file.Close();
 			fs = null;
 		} else if(this.isWeb()){
-			document.querySelector(elemkey).innerHTML = msg.join(this.lnCode());
+			document.querySelector(elemkey).innerHTML = msg.join(this.newline());
 		}
 	},
 	echo:function(arg){
@@ -108,7 +108,7 @@ RandomStrings.prototype = {
 		msg.push("match  : " + Math.floor(this.info.created.length / this.info.count * 100) + "%");
 		msg.push("");
 		msg.push("[create] : ");
-		msg.push(this.info.created.join(this.lnCode()));
+		msg.push(this.info.created.join(this.newline()));
 		return msg;
 	},
 	exec:function(elemkey){

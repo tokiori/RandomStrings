@@ -25,6 +25,9 @@
 		#gen_rand_str table {
 			border-collapse: collapse;
 		}
+		#gen_rand_str table tr>*:first-child {
+			width: 4.5em;
+		}
 		#gen_rand_str table td {
 			border: 1px solid #eeeeee;
 			padding: 0.3em;
@@ -37,11 +40,12 @@
 			border: 1px solid #cccccc;
 			background-color: #dddddd;
 			border-radius: 0.3em;
-			padding: 0 0.3em 0 0em;
+			margin-bottom: 0.3em;
+			width:2.6em;
 		}
 		.symbols input[type="checkbox"]{
 			padding: 0;
-			margin: 0 0 0 0.4em;
+			margin: 0 0 0 0.3em;
 		}
 		.symbols.checked{
 			background-color:#88eeaa;
@@ -147,6 +151,16 @@
 				};
 			});
 		}
+		var copyAll = function(){
+			var copystrings = [];
+			var results = document.querySelectorAll(".gen_result");
+			results.forEach(function(elem, key){
+				elem.classList.remove("copied");
+				copystrings.push(elem.innerText);
+				elem.classList.add("copied");
+			})
+			toclipboard(copystrings.join("\r\n"));
+		}
 		var toclipboard = function(text){
 			let choise;
 			let res;
@@ -231,17 +245,29 @@
 							<label for="strtype_symbol">記号（下記いずれかを含む）</label>
 						</div>
 						<div>
-							<label class="symbols" for="symbol_plus">
-								<input type="checkbox" value="\+" id="symbol_plus" name="symbol_plus">
-								+
+							<label class="symbols" for="symbol_underscore">
+								<input type="checkbox" value="\_" id="symbol_underscore" name="symbol_underscore" checked>
+								_
 							</label>
 							<label class="symbols" for="symbol_hyphen">
 								<input type="checkbox" value="\-" id="symbol_hyphen" name="symbol_hyphen" checked>
 								-
 							</label>
-							<label class="symbols" for="symbol_underscore">
-								<input type="checkbox" value="\_" id="symbol_underscore" name="symbol_underscore" checked>
-								_
+							<label class="symbols" for="symbol_plus">
+								<input type="checkbox" value="\+" id="symbol_plus" name="symbol_plus">
+								+
+							</label>
+							<label class="symbols" for="symbol_asterisk">
+								<input type="checkbox" value="\*" id="symbol_asterisk" name="symbol_asterisk">
+								*
+							</label>
+							<label class="symbols" for="symbol_slash">
+								<input type="checkbox" value="\/" id="symbol_slash" name="symbol_slash">
+								/
+							</label>
+							<label class="symbols" for="symbol_percent">
+								<input type="checkbox" value="\%" id="symbol_percent" name="symbol_percent">
+								%
 							</label>
 							<label class="symbols" for="symbol_question">
 								<input type="checkbox" value="\?" id="symbol_question" name="symbol_question">
@@ -251,10 +277,6 @@
 								<input type="checkbox" value="\!" id="symbol_exclamation" name="symbol_exclamation">
 								!
 							</label>
-							<label class="symbols" for="symbol_asterisk">
-								<input type="checkbox" value="\*" id="symbol_asterisk" name="symbol_asterisk">
-								*
-							</label>
 							<label class="symbols" for="symbol_sharp">
 								<input type="checkbox" value="\#" id="symbol_sharp" name="symbol_sharp">
 								#
@@ -262,6 +284,14 @@
 							<label class="symbols" for="symbol_atmark">
 								<input type="checkbox" value="\@" id="symbol_atmark" name="symbol_atmark">
 								@
+							</label>
+							<label class="symbols" for="symbol_colon">
+								<input type="checkbox" value="\:" id="symbol_colon" name="symbol_colon">
+								:
+							</label>
+							<label class="symbols" for="symbol_semicolon">
+								<input type="checkbox" value="\;" id="symbol_semicolon" name="symbol_semicolon">
+								;
 							</label>
 						</div>
 					</td>
@@ -285,7 +315,10 @@
 		</form>
 		<div>
 			<h2>生成結果</h2>
-			<p>タップでクリップボードへコピー</p>
+			<p>
+				タップでクリップボードへコピー
+				<input id="copy_button" type="button" value="一括コピー" onclick="copyAll()" style="font-weight: bold;">
+			</p>
 			<p id="result"></p>
 		</div>
 		<div>

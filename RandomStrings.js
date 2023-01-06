@@ -19,9 +19,16 @@ RandomStrings.prototype = {
 		count:0,
 		created:[]
 	},
+	initinfo:function(){
+		return {
+			status:"wait",
+			reason:"",
+			count:0,
+			created:[]
+		};
+	},
 	init:function(options){
-		this.info.count = 0;
-		this.info.created = [];
+		this.info = this.initinfo();
 		if(typeof(WScript) !== "undefined"){
 			file="./" + WScript.ScriptName.replace(/\.\w+$/, ".txt");
 		}
@@ -77,8 +84,18 @@ RandomStrings.prototype = {
 			this.info.reason = "unmatch and over max count.";
 			return "";
 		}
-		return (randstr.match(regex)) ? randstr : this.create();
+		return (randstr.match(regex) && this.inArray(this.info.created, randstr) < 0) ? randstr : this.create();
 	},
+    inArray:function(arr, val){
+        var ret = -1;
+        for(i=0;i<arr.length;i++){
+            if(arr[i]===val){
+                ret = i;
+                break;
+            }
+        }
+        return ret;
+    },
 	get:function(){
 		var created = [];
 		for(var i=0; i < this.options.num; i++){

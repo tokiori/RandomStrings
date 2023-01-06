@@ -2,6 +2,7 @@
 <html>
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>ランダム文字列生成</title>
 	<script type="text/javascript" src="./RandomStrings.js"></script>
 	<style>
 		body, div, p {
@@ -13,9 +14,14 @@
 			margin-top:0.8em;
 			margin-bottom:0.1em;
 		}
+		h1{
+			font-size: 1.2em;
+		}
 		h2{
+			font-size: 1.1em;
 			background-color: #ddddff;
 			padding: 0.3em 0;
+			margin-bottom: 0.3em;
 		}
 		.container {
 			padding: 0.3em;
@@ -24,16 +30,20 @@
 		}
 		#gen_rand_str table {
 			border-collapse: collapse;
+			margin-bottom: 0.5em;
 		}
 		#gen_rand_str table tr>*:first-child {
 			width: 4.5em;
 		}
 		#gen_rand_str table td {
 			border: 1px solid #eeeeee;
-			padding: 0.3em;
+			padding: 0.2em;
 		}
 		#gen_rand_str input[type="number"]{
 			font-size:1.1em;
+		}
+		.strtypes input[type='text'].invalid {
+			background-color: #ffcccc;
 		}
 		.symbols {
 			display: inline-block;
@@ -61,8 +71,8 @@
 			background-color:#88eeaa;
 		}
 		#run_button{
-			padding:0.3em 0.6em;
-			font-size: 1.1em;
+			padding:0.2em 0.6em;
+			font-size: 1em;
 		}
 	</style>
 	<script>
@@ -70,14 +80,56 @@
 			var symbols = document.querySelectorAll(".symbols input[type='checkbox']");
 			symbols.forEach(function(elem, key){
 				elem.onclick = function(){
-					checkedColorChange(elem);
+					toggleSymbolsColor(elem);
 				};
-				checkedColorChange(elem);
+				toggleSymbolsColor(elem);
 			})
-			console.dir(symbols);
+			var strtypes = document.querySelectorAll(".strtypes input[type='checkbox']");
+			strtypes.forEach(function(elem, key){
+				elem.onclick = function(){
+					toggleTypeTextDisabled(elem);
+				};
+				toggleTypeTextDisabled(elem);
+			})
+			var strtypevalues = document.querySelectorAll(".strtypes input[type='text']");
+			strtypevalues.forEach(function(elem, key){
+				elem.onchange = function(){
+					validTypeText(elem);
+				}
+				validTypeText(elem);
+			})
 			run();
 		};
-		var checkedColorChange = function(elem){
+		var validate = function(){
+			var valid = true;
+			var strtypevalues = document.querySelectorAll(".strtypes input[type='text']");
+			strtypevalues.forEach(function(elem, key){
+				if(!validTypeText(elem)){
+					valid = false;
+				}
+			})
+			return valid;
+		}
+		var validTypeText = function(elem){
+			var regvalue = document.querySelector("#"+ String(elem.id).replace(/_values/, "")).value;
+			var regex = new RegExp("^[" + regvalue + "]+$");
+			elem.classList.remove("invalid");
+			if(!elem.value.match(regex)){
+				var msg = [];
+				msg.push("指定可能な文字列のみ入力してください");
+				msg.push("入力された文字："+elem.value);
+				msg.push("入力可能な文字："+regvalue.replace(/\-/, "～"));
+				alert(msg.join("\r\n"));
+				elem.classList.add("invalid");
+				elem.focus();
+				return false;
+			}
+			return true;
+		};
+		var toggleTypeTextDisabled = function(elem){
+			document.querySelector("#"+elem.id+"_values").disabled = !elem.checked
+		};
+		var toggleSymbolsColor = function(elem){
 			var checkedsymbols = document.querySelectorAll(".symbols input[type='checkbox']:checked");
 			document.querySelector("#strtype_symbol").checked = checkedsymbols.length ? true : false;
 			document.querySelector("#presuffix").disabled = checkedsymbols.length ? false : true;
@@ -87,19 +139,17 @@
 				elem.parentNode.classList.remove('checked');
 			}
 		};
-		var str_alias = {
-			"a-z" : "abcdefghijklmnopqrstuvwxyz",
-			"A-Z" : "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-			"0-9" : "1234567890"
-		}
 		var run = function(){
 			var requiredptn = [];
 			var selectedstrtypes = [];
 			var selectedptntypes = [];
 
+			if(!validate()){
+				return false;
+			}
 			var strtypes = document.querySelectorAll(".strtypes input[type='checkbox']:checked");
 			strtypes.forEach(function(elem, key){
-				selectedstrtypes.push(str_alias[elem.value]);
+				selectedstrtypes.push(document.querySelector("#"+elem.id+"_values").value);
 				selectedptntypes.push(elem.value);
 				requiredptn.push("(?=.*[" + elem.value + "])");
 			})
@@ -129,6 +179,7 @@
 				str:optstr,
 				num:optnum,
 				len:optlen,
+				max:optmax,
 				show:false
 			});
 			// execute
@@ -211,19 +262,19 @@
 </head>
 <body onload="onloaded()">
 	<div class="container">
-		<h1>ランダム文字列生成</h1>
-		<p>※ページ描画時に再生成するため生成文字のコピペ保管忘れずに</p>
-		<a href="https://github.com/tokiori/RandomStrings">(github repository)</a>
+		<h1>
+			ランダム文字列生成<a href="https://github.com/tokiori/RandomStrings">(github repository)</a>
+		</h1>
 		<form id="gen_rand_str">
 			<h2>生成条件</h2>
 			<table>
 				<tr>
 					<td>長さ</td>
-					<td><input type="number" id="gen_len" value="24"></td>
+					<td><input class="genoptions" type="number" id="gen_len" value="24"></td>
 				</tr>
 				<tr>
 					<td>生成個数</td>
-					<td><input type="number" id="gen_num" value="1"></td>
+					<td><input class="genoptions" type="number" id="gen_num" value="1"></td>
 				</tr>
 				<tr>
 					<td>使用文字</td>
@@ -231,14 +282,17 @@
 						<div class="strtypes">
 							<input type="checkbox" value="A-Z" id="strtype_upper" name="strtype_upper" checked>
 							<label for="strtype_upper">半角英大文字</label>
+							<input type="text" id="strtype_upper_values" value="ABCDEFGHIJKLMNOPQRSTUVWXYZ">
 						</div>
 						<div class="strtypes">
 							<input type="checkbox" value="a-z" id="strtype_lower" name="strtype_lower" checked>
 							<label for="strtype_lower">半角英小文字</label>
+							<input type="text" id="strtype_lower_values" value="abcdefghijklmnopqrstuvwxyz">
 						</div>
 						<div class="strtypes">
 							<input type="checkbox" value="0-9" id="strtype_number" name="strtype_number" checked disabled>
-							<label for="strtype_number">半角数字</label>
+							<label for="strtype_number">半角数字　　</label>
+							<input type="text" id="strtype_number_values" value="1234567890">
 						</div>
 						<div class="">
 							<input type="checkbox" value="" id="strtype_symbol" name="strtype_symbol" disabled>
@@ -307,10 +361,9 @@
 				</tr>
 				<tr>
 					<td>試行回数</td>
-					<td><input type="number" id="gen_max" value="999"></td>
+					<td><input class="genoptions" type="number" id="gen_max" value="999"></td>
 				</tr>
 			</table>
-			<br>
 			<input id="run_button" type="button" value="生成実行" onclick="run()" style="font-weight: bold;">
 		</form>
 		<div>

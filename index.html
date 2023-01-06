@@ -13,6 +13,10 @@
 			margin-top:0.8em;
 			margin-bottom:0.1em;
 		}
+		h2{
+			background-color: #ddddff;
+			padding: 0.3em 0;
+		}
 		.container {
 			padding: 0.3em;
 			word-break: break-all;
@@ -31,20 +35,16 @@
 		.symbols {
 			display: inline-block;
 			border: 1px solid #cccccc;
-			background-color: #eeeeee;
+			background-color: #dddddd;
 			border-radius: 0.3em;
+			padding: 0 0.3em 0 0em;
 		}
 		.symbols input[type="checkbox"]{
 			padding: 0;
 			margin: 0 0 0 0.4em;
 		}
-		.symbols label{
-			padding: 0;
-			margin: 0 0.4em 0 0;
-		}
 		.symbols.checked{
 			background-color:#88eeaa;
-			font-weight: bold;
 		}
 		.gen_result{
 			border: 1px solid #cccccc;
@@ -55,6 +55,10 @@
 		}
 		.gen_result.copied{
 			background-color:#88eeaa;
+		}
+		#run_button{
+			padding:0.3em 0.6em;
+			font-size: 1.1em;
 		}
 	</style>
 	<script>
@@ -72,6 +76,7 @@
 		var checkedColorChange = function(elem){
 			var checkedsymbols = document.querySelectorAll(".symbols input[type='checkbox']:checked");
 			document.querySelector("#strtype_symbol").checked = checkedsymbols.length ? true : false;
+			document.querySelector("#presuffix").disabled = checkedsymbols.length ? false : true;
 			if(elem.checked){
 				elem.parentNode.classList.add('checked');
 			} else {
@@ -87,22 +92,26 @@
 			var requiredptn = [];
 			var selectedstrtypes = [];
 			var selectedptntypes = [];
+
 			var strtypes = document.querySelectorAll(".strtypes input[type='checkbox']:checked");
 			strtypes.forEach(function(elem, key){
 				selectedstrtypes.push(str_alias[elem.value]);
 				selectedptntypes.push(elem.value);
 				requiredptn.push("(?=.*[" + elem.value + "])");
 			})
+
 			var selectedsymbols = [];
 			var symbols = document.querySelectorAll(".symbols input[type='checkbox']:checked");
 			symbols.forEach(function(elem, key){
 				selectedsymbols.push(elem.value);
 			})
 			if(selectedsymbols.length) requiredptn.push("(?=.*[" + selectedsymbols.join("") + "])");
-			// var requiredptn = (selectedsymbols.length) ? "(?=.*[" + selectedsymbols.join("") + "])" : "";
-			// var optptn = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])" + requiredptn + "[0-9a-zA-Z][0-9a-zA-Z" + selectedsymbols.join("") + "]+[0-9a-zA-Z]$";
-			// var optstr = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890" + selectedsymbols.join("");
-			var optptn = "^" + requiredptn.join("") + "[" + selectedptntypes.join("") + "][" + selectedptntypes.join("") + selectedsymbols.join("") + "]+[" + selectedptntypes.join("") + "]$";
+
+			var $presuffix = document.querySelector("#presuffix");
+			var presuffixptn = !$presuffix.disabled && $presuffix.checked ? "[" + selectedptntypes.join("") + "]" : "";
+
+			var optptn = "^" + requiredptn.join("") + presuffixptn + "[" + selectedptntypes.join("") + selectedsymbols.join("") + "]+" + presuffixptn + "$";
+			// var optptn = "^" + requiredptn.join("") + "[" + selectedptntypes.join("") + "][" + selectedptntypes.join("") + selectedsymbols.join("") + "]+[" + selectedptntypes.join("") + "]$";
 			var optstr = selectedstrtypes.join("") + selectedsymbols.join("");
 			var optnum = document.querySelector("#gen_num").value || 1;
 			var optlen = document.querySelector("#gen_len").value || 24;
@@ -221,25 +230,48 @@
 							<input type="checkbox" value="" id="strtype_symbol" name="strtype_symbol" disabled>
 							<label for="strtype_symbol">記号（下記いずれかを含む）</label>
 						</div>
-						<div class="symbols">
-							<input type="checkbox" value="\+" id="symbol_plus" name="symbol_plus">
-							<label for="symbol_plus">+</label>
+						<div>
+							<label class="symbols" for="symbol_plus">
+								<input type="checkbox" value="\+" id="symbol_plus" name="symbol_plus">
+								+
+							</label>
+							<label class="symbols" for="symbol_hyphen">
+								<input type="checkbox" value="\-" id="symbol_hyphen" name="symbol_hyphen" checked>
+								-
+							</label>
+							<label class="symbols" for="symbol_underscore">
+								<input type="checkbox" value="\_" id="symbol_underscore" name="symbol_underscore" checked>
+								_
+							</label>
+							<label class="symbols" for="symbol_question">
+								<input type="checkbox" value="\?" id="symbol_question" name="symbol_question">
+								?
+							</label>
+							<label class="symbols" for="symbol_exclamation">
+								<input type="checkbox" value="\!" id="symbol_exclamation" name="symbol_exclamation">
+								!
+							</label>
+							<label class="symbols" for="symbol_asterisk">
+								<input type="checkbox" value="\*" id="symbol_asterisk" name="symbol_asterisk">
+								*
+							</label>
+							<label class="symbols" for="symbol_sharp">
+								<input type="checkbox" value="\#" id="symbol_sharp" name="symbol_sharp">
+								#
+							</label>
+							<label class="symbols" for="symbol_atmark">
+								<input type="checkbox" value="\@" id="symbol_atmark" name="symbol_atmark">
+								@
+							</label>
 						</div>
-						<div class="symbols">
-							<input type="checkbox" value="\-" id="symbol_hyphen" name="symbol_hyphen" checked>
-							<label for="symbol_hyphen">-</label>
-						</div>
-						<div class="symbols">
-							<input type="checkbox" value="\_" id="symbol_underscore" name="symbol_underscore" checked>
-							<label for="symbol_underscore">_</label>
-						</div>
-						<div class="symbols">
-							<input type="checkbox" value="\?" id="symbol_question" name="symbol_question">
-							<label for="symbol_question">?</label>
-						</div>
-						<div class="symbols">
-							<input type="checkbox" value="\!" id="symbol_exclamation" name="symbol_exclamation">
-							<label for="symbol_exclamation">!</label>
+					</td>
+				</tr>
+				<tr>
+					<td>生成条件</td>
+					<td>
+						<div class="presuffix">
+							<input type="checkbox" value="0-9" id="presuffix" name="presuffix" checked>
+							<label for="presuffix">先頭末尾は半角英数</label>
 						</div>
 					</td>
 				</tr>
@@ -249,7 +281,7 @@
 				</tr>
 			</table>
 			<br>
-			<input type="button" value="生成実行" onclick="run()" style="font-weight: bold;">
+			<input id="run_button" type="button" value="生成実行" onclick="run()" style="font-weight: bold;">
 		</form>
 		<div>
 			<h2>生成結果</h2>

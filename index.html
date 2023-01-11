@@ -31,6 +31,8 @@
 		#gen_rand_str table {
 			border-collapse: collapse;
 			margin-bottom: 0.5em;
+			width: 100%;
+			max-width: 690px;
 		}
 		#gen_rand_str table tr>*:first-child {
 			width: 4.5em;
@@ -74,6 +76,17 @@
 		#run_button{
 			padding:0.2em 0.6em;
 			font-size: 1em;
+		}
+		.canvas_container{
+			max-height: 460px;
+			max-width: 690px;
+			height:100%;
+			width: 100%;
+		}
+		#gen_rand_distribute{
+			height:100%;
+			width: 100%;
+			border:1px solid #cccccc;
 		}
 	</style>
 	<script>
@@ -209,6 +222,7 @@
 					$rs.classList.add("copied");
 				};
 			});
+			drawCanvas(rs.info.dbg);
 		}
 		var copyAll = function(){
 			var copystrings = [];
@@ -266,6 +280,84 @@
 	//		console.log("toclipboard:%s, text:%s, case:%s", res, text, choise);
 			return res;
 		}
+		var drawCanvas = function(dbg) {
+			const $canvas = document.querySelector("#gen_rand_distribute");
+			if ($canvas.getContext) {
+				$canvas.height = $canvas.clientHeight;
+				$canvas.width = $canvas.clientWidth;
+				var count = function(str) {
+					var len = 0;
+					[...str].forEach(function(val, i){
+						(val.match(/[ -~]/)) ? len += 1 : len += 2;
+					});
+					return Math.ceil((len+1) / 2);
+				}
+				var sizeof1char = function(str){
+					var text = ctx.measureText(str);
+					var len = count(str);
+					// console.dir(text);
+					return text.width / len;
+				};
+				var tategaki = function(str, x, y, rotate){
+					var _w = sizeof1char(str);
+					var _h = count(str) * _w;
+					if(rotate){
+						ctx.rotate(-Math.PI / 2);
+						ctx.strokeText(str, -_h, _w);
+						ctx.rotate(Math.PI / 2);
+					} else {
+						[...str].forEach(function(val, i){
+							ctx.strokeText(val, x, y + i * _w);
+							console.log("tategaki:"+val+"(" + x + "," + (y + i * _w));
+						});
+					}
+				};
+				var rand = dbg.rand;
+				var dup = dbg.duplicate;
+				var h = $canvas.height;
+				var w = $canvas.width;
+				document.getElementById("gen_duplicate").innerHTML = dup.length;
+
+				const ctx = $canvas.getContext("2d");//2次元描画
+				ctx.clearRect(0,0,w,h);
+
+				ctx.font = "1em メイリオ";
+				// ctx.font = "12px serif";
+				var yt = '生成値（0～1）→';
+				var xt = 'ランダム値生成回数（0～' + rand.length + '）→';
+				var tw = sizeof1char(yt);
+				var xt_x = count(xt) * sizeof1char(xt);
+				var xt_y = h -  tw / 3;
+				var lx = tw + tw / 3;
+				var ly = xt_y - tw - tw / 6;
+				tategaki(yt, 0, tw, true);
+				ctx.strokeText(xt, w - xt_x, xt_y);
+				// ctx.strokeText(x_title, (w - x_title_w)/2, ly + tw);
+				var span = (w - lx) / (rand.length + 1);
+				var cx = lx + span;
+				var cy = ly;
+
+				// draw xy line
+				ctx.beginPath();//パスの作成
+				ctx.moveTo(lx, 0);//開始点を指定
+				ctx.lineTo(lx, ly);//線を引く座標を入力
+				ctx.lineTo(w, ly);
+				// ctx.closePath();//パスを閉じる
+				ctx.stroke();//線の描画
+
+				for (i=0; i<rand.length; i++){
+					var x = cx + Math.floor(span * i);
+					var y = cy - Math.floor(cy * rand[i]);
+					// ctx.globalAlpha = 0.3;
+					// ctx.fillStyle = '#0000ff';
+					ctx.fillStyle = "rgba(0,0,255,0.4)";
+					ctx.beginPath();//パスの作成
+					ctx.moveTo(x, y);
+					ctx.arc(x, y, 2, 0, Math.PI * 2, true);//正円のパス
+					ctx.fill();
+				}
+			}
+		};
 	</script>
 </head>
 <body onload="onloaded()">
@@ -285,6 +377,10 @@
 					<td><input class="genoptions" type="number" id="gen_num" value="1"></td>
 				</tr>
 				<tr>
+					<td>試行回数</td>
+					<td><input class="genoptions" type="number" id="gen_max" value="999"></td>
+				</tr>
+				<tr>
 					<td>半角英数</td>
 					<td>
 						<div class="strtypes">
@@ -301,6 +397,10 @@
 							<input type="checkbox" value="0-9" id="strtype_number" name="strtype_number" checked>
 							<label for="strtype_number">数字</label>
 							<input type="text" id="strtype_number_values" value="1234567890">
+						</div>
+						<div class="presuffix">
+							<input type="checkbox" value="0-9" id="presuffix" name="presuffix" checked>
+							<label for="presuffix">先頭と末尾は半角英数</label>
 						</div>
 					</td>
 				</tr>
@@ -363,19 +463,6 @@
 						</div>
 					</td>
 				</tr>
-				<tr>
-					<td>生成条件</td>
-					<td>
-						<div class="presuffix">
-							<input type="checkbox" value="0-9" id="presuffix" name="presuffix" checked>
-							<label for="presuffix">先頭末尾は半角英数</label>
-						</div>
-					</td>
-				</tr>
-				<tr>
-					<td>試行回数</td>
-					<td><input class="genoptions" type="number" id="gen_max" value="999"></td>
-				</tr>
 			</table>
 			<input id="run_button" type="button" value="生成実行" onclick="run()" style="font-weight: bold;">
 		</form>
@@ -389,6 +476,12 @@
 		</div>
 		<div>
 			<h2>実行ログ</h2>
+			<div class="canvas_container">
+				<p>
+					ランダム値生成分布（重複回数：<span id="gen_duplicate">N</span>）
+				</p>
+				<canvas id="gen_rand_distribute"></canvas>
+			</div>
 			<p id="runlog"></p>
 		</div>
 	</div>

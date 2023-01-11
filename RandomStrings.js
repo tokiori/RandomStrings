@@ -80,6 +80,7 @@ RandomStrings.prototype = {
 	build:function(){
 		var arr=[];
 		for(i=0; i < this.options.len; i++) {
+			// var rand = Math.round(Math.random()*10000)/10000;
 			var rand = Math.random();
 			var j = Math.floor(rand * this.options.str.length);
 			arr.push(this.options.str.substr(j,1));

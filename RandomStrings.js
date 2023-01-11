@@ -13,17 +13,17 @@ RandomStrings.prototype = {
 		max:999,
 		show:true
 	},
-	info:{
-		status:"wait",
-		reason:"",
-		count:0,
-		created:[]
-	},
+	info:{},
 	initinfo:function(){
 		return {
 			status:"wait",
 			reason:"",
 			count:0,
+			dbg:{
+				rand:[],
+				cnt:[],
+				duplicate:[]
+			},
 			created:[]
 		};
 	},
@@ -67,11 +67,23 @@ RandomStrings.prototype = {
 			alert(arg);
 		}
 	},
+	dbginfo:function(gen){
+		this.info.dbg.rand.push(gen);
+		var cnt = this.info.dbg.cnt[gen];
+		if(cnt){
+			this.info.dbg.cnt[gen] = cnt++;
+			this.info.dbg.duplicate.push(gen);
+		} else {
+			this.info.dbg.cnt[gen] = 1;
+		}
+	},
 	build:function(){
 		var arr=[];
 		for(i=0; i < this.options.len; i++) {
-			var j = Math.floor(Math.random() * this.options.str.length);
+			var rand = Math.random();
+			var j = Math.floor(rand * this.options.str.length);
 			arr.push(this.options.str.substr(j,1));
+			this.dbginfo(rand);
 		}
 		return arr.join("");
 	},

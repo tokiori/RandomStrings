@@ -190,7 +190,7 @@
 			var optstr = selectedstrtypes.join("") + selectedstrsymbols.join("");
 			var optnum = document.querySelector("#gen_num").value || 1;
 			var optlen = document.querySelector("#gen_len").value || 24;
-			var optmax = document.querySelector("#gen_max").value || 999;
+			var optmax = document.querySelector("#gen_max").value || 9999;
 
 			// call construct and overwrite options
 			var rs=new RandomStrings({
@@ -271,7 +271,6 @@
 					res = document.execCommand("copy");
 				} finally {
 					document.body.removeChild(ta);
-	//				ta.parentElement.removeChild(ta);
 				}
 			}
 			if(!!!res){
@@ -281,6 +280,7 @@
 			return res;
 		}
 		var drawCanvas = function(dbg) {
+			// console.dir(dbg);
 			const $canvas = document.querySelector("#gen_rand_distribute");
 			if ($canvas.getContext) {
 				$canvas.height = $canvas.clientHeight;
@@ -316,7 +316,6 @@
 				var dup = dbg.duplicate;
 				var h = $canvas.height;
 				var w = $canvas.width;
-				document.getElementById("gen_duplicate").innerHTML = dup.length;
 
 				const ctx = $canvas.getContext("2d");//2次元描画
 				ctx.clearRect(0,0,w,h);
@@ -324,7 +323,8 @@
 				ctx.font = "1em メイリオ";
 				// ctx.font = "12px serif";
 				var yt = '生成値（0～1）→';
-				var xt = 'ランダム値生成回数（0～' + rand.length + '）→';
+				var duptext = dup.length ? '(うち重複:' + dup.length + ')' : '';
+				var xt = '生成回数:' + rand.length + duptext + '→';
 				var tw = sizeof1char(yt);
 				var xt_x = count(xt) * sizeof1char(xt);
 				var xt_y = h -  tw / 3;
@@ -332,7 +332,6 @@
 				var ly = xt_y - tw - tw / 6;
 				tategaki(yt, 0, tw, true);
 				ctx.strokeText(xt, w - xt_x, xt_y);
-				// ctx.strokeText(x_title, (w - x_title_w)/2, ly + tw);
 				var span = (w - lx) / (rand.length + 1);
 				var cx = lx + span;
 				var cy = ly;
@@ -350,7 +349,7 @@
 					var y = cy - Math.floor(cy * rand[i]);
 					// ctx.globalAlpha = 0.3;
 					// ctx.fillStyle = '#0000ff';
-					ctx.fillStyle = "rgba(0,0,255,0.4)";
+					ctx.fillStyle = dup.indexOf(rand[i]) >= 0 ? "rgba(255,0,0,0.8)" : "rgba(0,164,0,0.5)";
 					ctx.beginPath();//パスの作成
 					ctx.moveTo(x, y);
 					ctx.arc(x, y, 2, 0, Math.PI * 2, true);//正円のパス
@@ -374,11 +373,11 @@
 				</tr>
 				<tr>
 					<td>生成個数</td>
-					<td><input class="genoptions" type="number" id="gen_num" value="1"></td>
+					<td><input class="genoptions" type="number" id="gen_num" value="5"></td>
 				</tr>
 				<tr>
 					<td>試行回数</td>
-					<td><input class="genoptions" type="number" id="gen_max" value="999"></td>
+					<td><input class="genoptions" type="number" id="gen_max" value="9999"></td>
 				</tr>
 				<tr>
 					<td>半角英数</td>
@@ -477,9 +476,7 @@
 		<div>
 			<h2>実行ログ</h2>
 			<div class="canvas_container">
-				<p>
-					ランダム値生成分布（重複回数：<span id="gen_duplicate">N</span>）
-				</p>
+				<p>ランダム値生成分布</p>
 				<canvas id="gen_rand_distribute"></canvas>
 			</div>
 			<p id="runlog"></p>

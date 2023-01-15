@@ -222,7 +222,11 @@
 					$rs.classList.add("copied");
 				};
 			});
-			drawCanvas(rs.info.dbg);
+			// drawCanvas(rs.info.dbg);
+			ddm.drawMap("#gen_rand_distribute", {
+				duplicate : rs.info.dbg.duplicate,
+				values : rs.info.dbg.rand
+			});
 		}
 		var copyAll = function(){
 			var copystrings = [];
@@ -279,84 +283,130 @@
 	//		console.log("toclipboard:%s, text:%s, case:%s", res, text, choise);
 			return res;
 		}
-		var drawCanvas = function(dbg) {
-			// console.dir(dbg);
-			const $canvas = document.querySelector("#gen_rand_distribute");
-			if ($canvas.getContext) {
+		var DrawDistributionMap = function(){};
+		DrawDistributionMap.prototype = {
+			data : {
+				values : [],
+				duplicate : []
+			},
+			ctx : null,
+			count : function(str) {
+				var len = 0;
+				[...str].forEach(function(val, i){
+					(val.match(/[ -~]/)) ? len += 1 : len += 2;
+				});
+				return Math.ceil((len+1) / 2);
+			},
+			sizeof1char : function(str){
+				var text = this.ctx.measureText(str);
+				var len = this.count(str);
+				// console.dir(text);
+				return text.width / len;
+			},
+			tategaki : function(str, x, y, rotate){
+				var self = this;
+				var _w = this.sizeof1char(str);
+				var _h = y + this.count(str) * _w;
+				if(rotate){
+					this.ctx.rotate(-Math.PI / 2);
+					this.ctx.fillText(str, -_h, _w);
+					// ctx.strokeText(str, -_h, _w);
+					this.ctx.rotate(Math.PI / 2);
+				} else {
+					[...str].forEach(function(val, i){
+						self.ctx.fillText(val, x, y + i * _w);
+						// ctx.strokeText(val, x, y + i * _w);
+						console.log("tategaki:" + val + "(" + x + "," + (y + i * _w));
+					});
+				}
+			},
+			drawMap : function(selector, data){
+				const $canvas = document.querySelector(selector);
+				if (!$canvas.getContext) { return false; }
+				// this.data = dbg;
+				this.data = data;
+				this.init($canvas);
+				ty = '生成値:0～1→';
+				var duptext = this.data.duplicate.length ? '(うち重複:' + this.data.duplicate.length + ')' : '';
+				tx = '生成回数:' + this.data.values.length + duptext + '→';
+				this._drawAxis(tx, ty);
+				this._drawData();
+			},
+			init : function($canvas){
+				if (!$canvas.getContext) { return false; }
 				$canvas.height = $canvas.clientHeight;
 				$canvas.width = $canvas.clientWidth;
-				var count = function(str) {
-					var len = 0;
-					[...str].forEach(function(val, i){
-						(val.match(/[ -~]/)) ? len += 1 : len += 2;
-					});
-					return Math.ceil((len+1) / 2);
-				}
-				var sizeof1char = function(str){
-					var text = ctx.measureText(str);
-					var len = count(str);
-					// console.dir(text);
-					return text.width / len;
+				this.graph.h = $canvas.height;
+				this.graph.w = $canvas.width;
+				this.ctx = $canvas.getContext("2d");//2次元描画
+				this.ctx.clearRect(0, 0, this.graph.w, this.graph.h);
+			},
+			graph : {
+				h : null,
+				w : null
+			},
+			axis : {
+				x : null,
+				y : null,
+				h : null,
+				w : null
+			},
+			textInfo : function(text){
+				var charcnt = this.count(text);
+				var charwidth = this.sizeof1char(text);
+				return {
+					text : text,
+					w : charcnt * charwidth,
+					h : charwidth
 				};
-				var tategaki = function(str, x, y, rotate){
-					var _w = sizeof1char(str);
-					var _h = count(str) * _w;
-					if(rotate){
-						ctx.rotate(-Math.PI / 2);
-						ctx.strokeText(str, -_h, _w);
-						ctx.rotate(Math.PI / 2);
-					} else {
-						[...str].forEach(function(val, i){
-							ctx.strokeText(val, x, y + i * _w);
-							console.log("tategaki:"+val+"(" + x + "," + (y + i * _w));
-						});
-					}
-				};
-				var rand = dbg.rand;
-				var dup = dbg.duplicate;
-				var h = $canvas.height;
-				var w = $canvas.width;
-
-				const ctx = $canvas.getContext("2d");//2次元描画
-				ctx.clearRect(0,0,w,h);
-
-				ctx.font = "1em メイリオ";
+			},
+			_drawAxis : function(tx, ty){
+				// this.ctx.font = "12pt メイリオ";
+				this.ctx.font = "1em メイリオ";
 				// ctx.font = "12px serif";
-				var yt = '生成値（0～1）→';
-				var duptext = dup.length ? '(うち重複:' + dup.length + ')' : '';
-				var xt = '生成回数:' + rand.length + duptext + '→';
-				var tw = sizeof1char(yt);
-				var xt_x = count(xt) * sizeof1char(xt);
-				var xt_y = h -  tw / 3;
-				var lx = tw + tw / 3;
-				var ly = xt_y - tw - tw / 6;
-				tategaki(yt, 0, tw, true);
-				ctx.strokeText(xt, w - xt_x, xt_y);
-				var span = (w - lx) / (rand.length + 1);
-				var cx = lx + span;
-				var cy = ly;
+				var titlemargin = 2;
+				var titleX = this.textInfo(tx);
+				var titleY = this.textInfo(ty);
+				this.axis.x = titleY.h * 1.2 + titlemargin;
+				this.axis.y = 0;
+				this.axis.w = this.graph.w;
+				this.axis.h = this.graph.h - (this.axis.y + titleX.h * 1.2 + titlemargin);
+				titleY.x = this.axis.y;
+				titleY.y = 0;
+				titleX.x = this.graph.w - titleX.w;
+				titleX.y = this.axis.y + this.axis.h + titleX.h + titlemargin;
+				this.tategaki(titleY.text, titleY.x, titleY.y, true);
+				this.ctx.fillText(titleX.text, titleX.x, titleX.y);
 
-				// draw xy line
-				ctx.beginPath();//パスの作成
-				ctx.moveTo(lx, 0);//開始点を指定
-				ctx.lineTo(lx, ly);//線を引く座標を入力
-				ctx.lineTo(w, ly);
+				this.ctx.beginPath();//パスの作成
+				this.ctx.moveTo(this.axis.x, this.axis.y);//開始点を指定
+				this.ctx.lineTo(this.axis.x, this.axis.y + this.axis.h);//線を引く座標を入力
+				this.ctx.lineTo(this.axis.w, this.axis.y + this.axis.h);
 				// ctx.closePath();//パスを閉じる
-				ctx.stroke();//線の描画
+				this.ctx.stroke();//線の描画
+			},
+			_drawData : function(){
+				var span = (this.graph.w - this.axis.x) / (this.data.values.length + 1);
+				var zeroX = this.axis.x;
+				var zeroY = this.axis.y + this.axis.h;
+				var radius = Math.floor(this.graph.w / this.data.values.length * 0.6) + 1;
+				var max = 5;
+				if(radius > max) radius = max; 
 
-				for (i=0; i<rand.length; i++){
-					var x = cx + Math.floor(span * i);
-					var y = cy - Math.floor(cy * rand[i]);
+				for (i=0; i<this.data.values.length; i++){
+					var x = zeroX + Math.floor(span * i) + span;
+					var y = zeroY - Math.floor(this.axis.h * this.data.values[i]);
 					// ctx.globalAlpha = 0.3;
 					// ctx.fillStyle = '#0000ff';
-					ctx.fillStyle = dup.indexOf(rand[i]) >= 0 ? "rgba(255,0,0,0.8)" : "rgba(0,164,0,0.5)";
-					ctx.beginPath();//パスの作成
-					ctx.moveTo(x, y);
-					ctx.arc(x, y, 2, 0, Math.PI * 2, true);//正円のパス
-					ctx.fill();
+					this.ctx.fillStyle = this.data.duplicate.indexOf(this.data.values[i]) >= 0 ? "rgba(255,0,0,0.6)" : "rgba(0,164,0,0.5)";
+					this.ctx.beginPath();//パスの作成
+					this.ctx.moveTo(x, y);
+					this.ctx.arc(x, y, radius, 0, Math.PI * 2, true);//正円のパス
+					this.ctx.fill();
 				}
-			}
+			},
 		};
+		var ddm = new DrawDistributionMap();
 	</script>
 </head>
 <body onload="onloaded()">
@@ -467,6 +517,10 @@
 		</form>
 		<div>
 			<h2>生成結果</h2>
+			<div class="canvas_container">
+				<p>ランダム値生成分布</p>
+				<canvas id="gen_rand_distribute"></canvas>
+			</div>
 			<p>
 				タップでクリップボードへコピー
 				<input id="copy_button" type="button" value="一括コピー" onclick="copyAll()" style="font-weight: bold;">
@@ -475,10 +529,6 @@
 		</div>
 		<div>
 			<h2>実行ログ</h2>
-			<div class="canvas_container">
-				<p>ランダム値生成分布</p>
-				<canvas id="gen_rand_distribute"></canvas>
-			</div>
 			<p id="runlog"></p>
 		</div>
 	</div>
